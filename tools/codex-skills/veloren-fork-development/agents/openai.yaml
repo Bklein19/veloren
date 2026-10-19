@@ -1,0 +1,4 @@
+interface:
+  display_name: "Veloren fork development"
+  short_description: "Edit and test Brandon's personal Veloren fork"
+  default_prompt: "Use $veloren-fork-development to make and validate a change in my personal Veloren game."

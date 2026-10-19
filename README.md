@@ -2,6 +2,7 @@
 
 Run `build-and-play.cmd` to rebuild and play this checkout. See
 [README-FORK.md](README-FORK.md) for editing, offline play, saves, and Windows build setup.
+For code and asset changes, start with [DEVELOPMENT.md](DEVELOPMENT.md).
 
 The original Veloren introduction follows.
 

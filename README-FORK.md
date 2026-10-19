@@ -2,6 +2,11 @@
 
 Personal repository: https://github.com/Bklein19/veloren
 
+For future development sessions, read [DEVELOPMENT.md](DEVELOPMENT.md). It maps
+the code and assets, records personal changes, and gives tested build and test
+commands. [AGENTS.md](AGENTS.md) provides the repository instructions for coding
+agents.
+
 The `codex/personal-game` branch is the playable personal version. It starts from
 Veloren's GitHub mirror, which includes the game assets as regular Git files.
 The original GPL-3.0-or-later license and upstream credits still apply.
@@ -19,7 +24,7 @@ checkout automatically.
 - AI and server behavior are under `server/` and `rtsim/`.
 - Rendering, menus, controls, and the game window are under `voxygen/`.
 
-Close the game before changing source code, then launch again to rebuild it.
+Quit the game normally before rebuilding changed Rust code, then launch again.
 Existing assets can also reload while playing when that asset type supports it.
 
 Singleplayer works offline. The launcher uses Cargo's offline mode, so launching
@@ -61,6 +66,12 @@ Build without opening a window:
 
 ```bat
 build-and-play.cmd --build-only
+```
+
+Run shared gameplay tests, optionally filtering by test name:
+
+```bat
+test-gameplay.cmd rocket_glider_tests
 ```
 
 After changing dependencies, fetch them online before building offline:
