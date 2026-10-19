@@ -457,6 +457,7 @@ impl ControllerSettings {
             GameInput::Dance => Some(Button::Simple(GilButton::Unknown)),
             GameInput::Greet => Some(Button::Simple(GilButton::Unknown)),
             GameInput::Glide => Some(Button::Simple(GilButton::DPadUp)),
+            GameInput::GliderBoost => Some(Button::Simple(GilButton::Unknown)),
             GameInput::SwimUp => Some(Button::Simple(GilButton::South)),
             GameInput::SwimDown => Some(Button::Simple(GilButton::West)),
             GameInput::Fly => Some(Button::Simple(GilButton::Unknown)),
@@ -652,6 +653,11 @@ impl ControllerSettings {
                 mod2: Button::Simple(GilButton::Unknown),
             }),
             GameInput::Glide => Some(LayerEntry {
+                button: Button::Simple(GilButton::Unknown),
+                mod1: Button::Simple(GilButton::Unknown),
+                mod2: Button::Simple(GilButton::Unknown),
+            }),
+            GameInput::GliderBoost => Some(LayerEntry {
                 button: Button::Simple(GilButton::Unknown),
                 mod1: Button::Simple(GilButton::Unknown),
                 mod2: Button::Simple(GilButton::Unknown),

@@ -273,7 +273,10 @@ impl MovementEventMapper {
         match (previous_state.event.clone(), character_state) {
             (_, CharacterState::Climb { .. }) => SfxEvent::Climb,
             (_, CharacterState::Glide(glide))
-                if matches!(glide.booster, Some(states::glide::Boost::Forward(_))) =>
+                if matches!(
+                    glide.booster,
+                    Some(states::glide::Boost::Forward(_) | states::glide::Boost::Rocket)
+                ) =>
             {
                 if rand::rng().random_bool(0.5) {
                     SfxEvent::FlameThrower

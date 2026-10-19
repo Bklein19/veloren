@@ -2435,24 +2435,41 @@ impl ParticleMgr {
                         });
 
                         // When using the glide boost, emit particles
-                        if let Some(states::glide::Boost::Forward(_)) = &glide.booster
-                            && let Some(figure_state) =
-                                figure_mgr.states.character_states.get(&entity)
-                            && let Some(tp0) = figure_state.primary_abs_trail_points
-                            && let Some(tp1) = figure_state.secondary_abs_trail_points
-                        {
+                        if matches!(
+                            glide.booster,
+                            Some(states::glide::Boost::Forward(_) | states::glide::Boost::Rocket)
+                        ) {
+                            let outlet = figure_mgr
+                                .states
+                                .character_states
+                                .get(&entity)
+                                .and_then(|figure| {
+                                    Some((
+                                        figure.primary_abs_trail_points?,
+                                        figure.secondary_abs_trail_points?,
+                                    ))
+                                })
+                                .map(|(tp0, tp1)| (tp0.0 + tp1.1) * 0.5 + Vec3::unit_z() * 0.5)
+                                .unwrap_or_else(|| {
+                                    interpolated.pos + Vec3::unit_z() * body.height() * 0.7
+                                        - *glide.ori.look_dir()
+                                });
                             for _ in 0..self.scheduler.heartbeats(Duration::from_millis(5)) {
-                                self.push_particle(scene_data.particles_chance, Particle::new(
-                                    Duration::from_secs(2),
-                                    time,
-                                    ParticleMode::EngineJet,
-                                    ((tp0.0 + tp1.1) * 0.5)
-                                        // TODO: This offset is used to position the particles at the engine outlet. Ideally, we'd have a way to configure this per-glider
-                                        + Vec3::unit_z() * 0.5
-                                        + Vec3::<f32>::zero().map(|_| rng.random_range(-0.25..0.25))
-                                        + vel.map_or(Vec3::zero(), |v| -v.0 * dt * rng.random::<f32>()),
-                                scene_data,
-                                ));
+                                self.push_particle(
+                                    scene_data.particles_chance,
+                                    Particle::new(
+                                        Duration::from_secs(2),
+                                        time,
+                                        ParticleMode::EngineJet,
+                                        outlet
+                                            + Vec3::<f32>::zero()
+                                                .map(|_| rng.random_range(-0.25..0.25))
+                                            + vel.map_or(Vec3::zero(), |v| {
+                                                -v.0 * dt * rng.random::<f32>()
+                                            }),
+                                        scene_data,
+                                    ),
+                                );
                             }
                         }
                     }

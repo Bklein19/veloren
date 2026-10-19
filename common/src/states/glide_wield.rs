@@ -77,8 +77,24 @@ impl CharacterBehavior for Data {
 
         // If still in this state, do the things
         if matches!(update.character, CharacterState::GlideWield(_)) {
-            // If not on the ground while wielding glider enter gliding state
-            update.character = if data.physics.on_ground.is_none() {
+            let rocket_ready = data.inputs.glider_boost
+                && data.physics.in_liquid().is_none()
+                && data
+                    .inventory
+                    .and_then(|inv| inv.equipped(EquipSlot::Glider))
+                    .is_some();
+            // Rocket thrust can start a glide even from the ground.
+            update.character = if rocket_ready {
+                update.vel.0 = glide::rocket_boost_velocity(
+                    update.vel.0,
+                    data.inputs.look_dir,
+                    data.dt.0,
+                    data.physics.on_ground.is_some(),
+                );
+                let mut glide = glide::Data::new(self.span_length, self.chord_length, self.ori);
+                glide.booster = Some(glide::Boost::Rocket);
+                CharacterState::Glide(glide)
+            } else if data.physics.on_ground.is_none() {
                 CharacterState::Glide(glide::Data::new(
                     self.span_length,
                     self.chord_length,

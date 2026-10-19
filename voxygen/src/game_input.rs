@@ -51,6 +51,8 @@ pub enum GameInput {
     Trade,
     #[strum(serialize = "gameinput-glide")]
     Glide,
+    #[strum(serialize = "gameinput-gliderboost")]
+    GliderBoost,
     #[strum(serialize = "gameinput-togglelantern")]
     ToggleLantern,
     #[strum(serialize = "gameinput-swaploadout")]
@@ -222,7 +224,10 @@ impl GameInput {
             GameInput::SpectateSpeedBoost => &[GameInput::Glide],
             GameInput::WallJump => &[GameInput::Mount, GameInput::Jump],
 
-            GameInput::SwimDown | GameInput::Sneak | GameInput::CancelClimb => &[GameInput::Roll],
+            GameInput::SwimDown
+            | GameInput::Sneak
+            | GameInput::CancelClimb
+            | GameInput::GliderBoost => &[GameInput::Roll],
 
             GameInput::SpectateViewpoint => &[GameInput::MapSetMarker],
 

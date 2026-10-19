@@ -4,6 +4,7 @@ use crate::{
         CharacterState, Ori, StateUpdate, Vel, character_state::OutputEvents,
         fluid_dynamics::angle_of_attack, inventory::slot::EquipSlot,
     },
+    consts::GRAVITY,
     event::LocalEvent,
     outcome::Outcome,
     states::{
@@ -18,12 +19,42 @@ use vek::*;
 
 const PITCH_SLOW_TIME: f32 = 0.5;
 
+const ROCKET_SPEED: f32 = 65.0;
+const ROCKET_RESPONSE: f32 = 8.0;
+const ROCKET_TAKEOFF_SPEED: f32 = 12.0;
+
+/// Steer rocket thrust toward the look direction without accumulating unlimited
+/// speed. Gravity compensation lets a level glider remain airborne while
+/// powered.
+pub fn rocket_boost_velocity(
+    velocity: Vec3<f32>,
+    look_dir: Dir,
+    dt: f32,
+    on_ground: bool,
+) -> Vec3<f32> {
+    let dt = dt.clamp(0.0, 0.1);
+    if dt == 0.0 {
+        return velocity;
+    }
+
+    let response = 1.0 - (-ROCKET_RESPONSE * dt).exp();
+    let mut velocity = velocity + (*look_dir * ROCKET_SPEED - velocity) * response;
+    // The physics system applies gravity after character movement.
+    velocity.z += GRAVITY * dt;
+    if on_ground {
+        velocity.z = velocity.z.max(ROCKET_TAKEOFF_SPEED);
+    }
+    velocity
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Boost {
     /// Slowly increases XY speed
     Forward(f32),
     /// Gives Z impulse
     Upward(f32),
+    /// Unlimited thrust while the rocket control is held.
+    Rocket,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -93,7 +124,10 @@ impl CharacterBehavior for Data {
             ..*self
         });
 
-        let gained_booster = self.booster;
+        // A released rocket must stop immediately, rather than replaying the
+        // previous tick's boost like an item-granted booster.
+        let gained_booster = self.booster.filter(|boost| !matches!(boost, Boost::Rocket));
+        let rocket_boosting = data.inputs.glider_boost;
 
         handle_glider_input_or(data, &mut update, output_events, |_, _| {});
 
@@ -107,6 +141,7 @@ impl CharacterBehavior for Data {
         if data.physics.on_ground.is_some()
             && (data.vel.0 - data.physics.ground_vel).magnitude_squared() < 2_f32.powi(2)
             && gained_booster.is_none()
+            && !rocket_boosting
         {
             update.character = CharacterState::GlideWield(glide_wield::Data::from(data));
         } else if data.physics.in_liquid().is_some()
@@ -233,11 +268,23 @@ impl CharacterBehavior for Data {
                             update.vel.0.y *= 1.0 + speed * data.dt.0;
                         }
                     },
+                    Boost::Rocket => {},
                 }
             };
 
-            // Don't override gained booster, if any, otherwise set to None
-            let next_booster = if let CharacterState::Glide(Data {
+            if rocket_boosting {
+                update.vel.0 = rocket_boost_velocity(
+                    update.vel.0,
+                    data.inputs.look_dir,
+                    data.dt.0,
+                    data.physics.on_ground.is_some(),
+                );
+            }
+
+            // Keep the active booster available to the visual and sound effects.
+            let next_booster = if rocket_boosting {
+                Some(Boost::Rocket)
+            } else if let CharacterState::Glide(Data {
                 booster: Some(booster),
                 ..
             }) = update.character

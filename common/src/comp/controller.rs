@@ -263,6 +263,9 @@ pub struct ControllerInputs {
     /// Currently, setting this to false will *not* disable strafing during a
     /// wielding character state.
     pub strafing: bool,
+    /// Hold to power the rocket while the glider is open.
+    #[serde(default)]
+    pub glider_boost: bool,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -295,6 +298,7 @@ impl ControllerInputs {
         self.move_z = new.move_z;
         self.look_dir = new.look_dir;
         self.break_block_pos = new.break_block_pos;
+        self.glider_boost = new.glider_boost;
     }
 }
 

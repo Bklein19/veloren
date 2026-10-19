@@ -230,6 +230,7 @@ impl ControlSettings {
             GameInput::Dance => char("J"),
             GameInput::Greet => char("H"),
             GameInput::Glide => Key::Named(NamedKey::Control),
+            GameInput::GliderBoost => Key::Named(NamedKey::Shift),
             GameInput::SwimUp => Key::Named(NamedKey::Space),
             GameInput::SwimDown => Key::Named(NamedKey::Shift),
             GameInput::Fly => char("H"),

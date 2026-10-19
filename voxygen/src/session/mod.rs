@@ -526,6 +526,7 @@ impl SessionState {
                 | GameInput::AutoWalk
                 | GameInput::SwimUp
                 | GameInput::SwimDown
+                | GameInput::GliderBoost
                 | GameInput::SwapLoadout
                 | GameInput::ToggleWield
                 | GameInput::Slot1
@@ -901,6 +902,9 @@ impl PlayState for SessionState {
                             GameInput::SwimDown => {
                                 self.key_state.swim_down = state;
                             },
+                            GameInput::GliderBoost => {
+                                self.key_state.glider_boost = state;
+                            },
                             GameInput::Sit => {
                                 if state && controlling_char {
                                     self.stop_auto_walk();
@@ -926,7 +930,12 @@ impl PlayState for SessionState {
                             },
                             GameInput::Sneak => {
                                 let is_trading = self.client.borrow().is_trading();
-                                if state && !is_trading && controlling_char {
+                                let glider_open = self
+                                    .client
+                                    .borrow()
+                                    .current::<CharacterState>()
+                                    .is_some_and(|cs| cs.is_glide_wielded());
+                                if state && !is_trading && controlling_char && !glider_open {
                                     self.stop_auto_walk();
                                     self.client.borrow_mut().toggle_sneak();
                                 }
@@ -1574,6 +1583,7 @@ impl PlayState for SessionState {
 
                 self.inputs.move_z =
                     self.key_state.swim_up as i32 as f32 - self.key_state.swim_down as i32 as f32;
+                self.inputs.glider_boost = self.key_state.glider_boost;
             }
 
             match self.scene.camera().get_mode() {

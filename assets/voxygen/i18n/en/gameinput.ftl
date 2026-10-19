@@ -31,6 +31,7 @@ gameinput-moveback = Move Backwards
 gameinput-jump = Jump
 gameinput-walljump = Wall-Jump
 gameinput-glide = Glider
+gameinput-gliderboost = Glider Rocket Boost
 gameinput-roll = Roll
 gameinput-togglelantern = Toggle Lantern
 gameinput-mount = Mount

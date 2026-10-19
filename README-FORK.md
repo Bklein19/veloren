@@ -26,6 +26,14 @@ Singleplayer works offline. The launcher uses Cargo's offline mode, so launching
 and rebuilding with the cached dependencies does not require internet access.
 Adding or updating dependencies requires fetching them online first.
 
+## Rocket glider
+
+Open your glider with **Ctrl**, then tap **Shift** for a burst or hold **Shift**
+for continuous rocket thrust. Look upward to climb and steer with the camera.
+The rocket has no fuel cost, stamina drain, or cooldown. Releasing Shift returns
+to normal gliding. You can also launch from the ground with the glider open.
+The **Glider Rocket Boost** binding can be changed in the controls settings.
+
 ## Saves
 
 This fork uses `userdata/` inside the checkout. Existing saves and settings were

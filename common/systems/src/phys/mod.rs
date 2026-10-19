@@ -128,6 +128,100 @@ fn calc_z_limit(char_state_maybe: Option<&CharacterState>, collider: &Collider) 
     collider.get_z_limits(modifier)
 }
 
+#[cfg(test)]
+mod rocket_glider_tests {
+    use super::*;
+    use common::comp::body::humanoid;
+
+    fn simulate_powered_flight(look_dir: Dir, ticks_per_second: u32) -> (Vec3<f32>, Vel) {
+        let body = Body::Humanoid(
+            humanoid::Body::iter()
+                .find(|body| {
+                    body.species == humanoid::Species::Human
+                        && body.body_type == humanoid::BodyType::Male
+                })
+                .unwrap(),
+        );
+        let glider = states::glide::Data::new(
+            4.5,
+            1.2,
+            Ori::from(look_dir).pitched_up(std::f32::consts::PI * 0.04),
+        );
+        let wings = Wings {
+            aspect_ratio: glider.aspect_ratio,
+            planform_area: glider.planform_area,
+            ori: glider.ori,
+        };
+        let dt = DeltaTime(1.0 / ticks_per_second as f32);
+        let mut velocity = Vel::zero();
+        let mut position = Vec3::zero();
+
+        for _ in 0..60 * ticks_per_second {
+            velocity.0 = states::glide::rocket_boost_velocity(velocity.0, look_dir, dt.0, false);
+            velocity = integrate_forces(
+                &dt,
+                velocity,
+                (&body, Some(&wings)),
+                &body.density(),
+                &body.mass(),
+                &Fluid::default(),
+                GRAVITY,
+                None,
+            );
+            assert!(velocity.0.map(f32::is_finite).reduce_and());
+            assert!(
+                velocity.0.magnitude() < 100.0,
+                "rocket speed must remain bounded"
+            );
+            position += velocity.0 * dt.0;
+        }
+        (position, velocity)
+    }
+
+    #[test]
+    fn rocket_sustains_level_flight_against_real_glider_drag_and_gravity() {
+        for ticks_per_second in [30, 60, 144] {
+            let (position, velocity) = simulate_powered_flight(Dir::default(), ticks_per_second);
+            assert!(
+                position.y > 2_000.0,
+                "rocket must maintain forward progress"
+            );
+            assert!(
+                position.z > -3.0,
+                "powered flight must not steadily lose height"
+            );
+            assert!(velocity.0.y > 40.0);
+        }
+    }
+
+    #[test]
+    fn rocket_can_climb_for_a_full_minute_at_different_tick_rates() {
+        let look_dir = Dir::from_unnormalized(Vec3::new(0.0, 1.0, 1.0)).unwrap();
+        for ticks_per_second in [30, 60, 144] {
+            let (position, velocity) = simulate_powered_flight(look_dir, ticks_per_second);
+            assert!(
+                position.z > 1_500.0,
+                "sustained thrust must permit continuous climbing"
+            );
+            assert!(position.y > 1_500.0);
+            assert!(velocity.0.z > 25.0);
+        }
+    }
+
+    #[test]
+    fn rocket_lifts_off_from_a_standing_start_without_a_jump() {
+        let dt = DeltaTime(1.0 / 60.0);
+        let velocity =
+            states::glide::rocket_boost_velocity(Vec3::zero(), Dir::default(), dt.0, true);
+        assert!(velocity.y > 0.0);
+        assert!(velocity.z - GRAVITY * dt.0 > 10.0);
+        assert_eq!(
+            states::glide::rocket_boost_velocity(Vec3::zero(), Dir::default(), 0.0, true),
+            Vec3::zero(),
+        );
+    }
+}
+
 event_emitters! {
     struct Events[Emitters] {
         land_on_ground: LandOnGroundEvent,
