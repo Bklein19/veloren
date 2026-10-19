@@ -1,3 +1,10 @@
+# Brandon's personal Veloren fork
+
+Run `build-and-play.cmd` to rebuild and play this checkout. See
+[README-FORK.md](README-FORK.md) for editing, offline play, saves, and Windows build setup.
+
+The original Veloren introduction follows.
+
 <!-- SPDX-SnippetBegin -->
 <!-- SPDX-SnippetCopyrightText: 2025 Hrom -->
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->

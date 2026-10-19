@@ -1,4 +1,13 @@
-# Contributing
+# Contributing to this personal fork
+
+This is Brandon's personal fork of Veloren. AI-assisted code and asset changes
+are permitted here. Keep the GPL license, upstream credits, and third-party
+license notices. See [README-FORK.md](README-FORK.md) for the build workflow.
+
+## Contributions to the official Veloren project
+
+The original upstream policy follows. It applies to submissions to the official
+Veloren project, which maintains separate rules from this personal fork.
 
 To learn about how to contribute, take a look at the [Veloren book](https://book.veloren.net).
 
